@@ -1,0 +1,5 @@
+/.air
+/.gopath
+/.gocoverage
+/lmk
+/db.sqlite
