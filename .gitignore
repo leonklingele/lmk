@@ -1,3 +1,6 @@
+/.direnv
+
+# Backend
 /.air
 /.gopath
 /.gocoverage
