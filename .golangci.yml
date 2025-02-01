@@ -1,31 +1,50 @@
-# v1.2.0. Created based on golangci-lint v1.56.0
+# v1.6.0. Created based on golangci-lint v1.63.4
 
 run:
   timeout: 5m
-  skip-dirs-use-default: false
+  concurrency: 0
   modules-download-mode: readonly
   allow-serial-runners: true
 
 output:
   sort-results: true
+
+issues:
+  exclude-use-default: false
+  exclude-dirs-use-default: false
+  exclude-case-sensitive: true
+  exclude-generated: strict
+  max-issues-per-linter: 0
+  max-same-issues: 0
   uniq-by-line: false
+  exclude-rules:
+    - linters:
+        - err113
+      text: "do not define dynamic errors, use wrapped static errors instead*"
+  # fix: true
 
 linters-settings:
+  asasalint:
+    use-builtin-exclusions: false
+
+  copyloopvar:
+    check-alias: true
+
   depguard:
     rules:
       all:
         list-mode: lax
         deny:
           - pkg: "flag"
-            desc: '`flag` package is only allowed in main.go'
-          - pkg: "log$"
-            desc: 'logging is provided by `log/slog`'
+            desc: "`flag` package is only allowed in main.go"
           - pkg: "io/ioutil"
-            desc: '`io/ioutil` package is deprecated, use the `io` and `os` package instead'
+            desc: "`io/ioutil` package is deprecated, use the `io` and `os` package instead"
+          - pkg: "log$"
+            desc: "logging is provided by `log/slog`"
           - pkg: "reflect"
-            desc: '`reflect` package is dangerous to use'
+            desc: "`reflect` package is dangerous to use"
           - pkg: "unsafe"
-            desc: '`unsafe` package is dangerous to use'
+            desc: "`unsafe` package is dangerous to use"
 
   errcheck:
     check-type-assertions: true
@@ -51,6 +70,7 @@ linters-settings:
   gci:
     sections:
       - standard
+      # - localmodule # TODO: Investigate why this doesn't work
       - prefix(github.com/leonklingele/lmk)
       - default
       - blank
@@ -58,16 +78,14 @@ linters-settings:
       # - alias
     custom-order: true
 
+  ginkgolinter:
+    force-expect-to: true
+
   goconst:
     numbers: true
 
   gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-      - experimental
-      - opinionated
+    enable-all: true
     disabled-checks:
       - hugeParam
       - rangeExprCopy
@@ -112,6 +130,9 @@ linters-settings:
   misspell:
     locale: US
 
+  nilnil:
+    detect-opposite: true
+
   nolintlint:
     require-explanation: true
     require-specific: true
@@ -130,12 +151,12 @@ linters-settings:
 
   reassign:
     patterns:
-      - '.*'
+      - ".*"
 
   revive:
     enable-all-rules: true
     rules:
-      # Provided by gomnd linter
+      # Provided by mnd linter
       - name: add-constant
         disabled: true
       - name: argument-limit
@@ -150,10 +171,9 @@ linters-settings:
           - nolint
       - name: cyclomatic
         disabled: true
-      # TODO: Enable this check. Currently disabled due to upstream bug.
-      # - name: enforce-repeated-arg-type-style
-      #   arguments:
-      #     - short
+      - name: enforce-repeated-arg-type-style
+        arguments:
+          - short
       - name: enforce-slice-style
         arguments:
           - make
@@ -161,10 +181,10 @@ linters-settings:
         disabled: true
       - name: file-header
         disabled: true
-      - name: function-result-limit
-        arguments: [3]
       - name: function-length
         disabled: true
+      - name: function-result-limit
+        arguments: [3]
       - name: line-length-limit
         disabled: true
       - name: max-public-structs
@@ -175,6 +195,14 @@ linters-settings:
         disabled: true
       - name: optimize-operands-order
         disabled: true
+
+  sloglint:
+    kv-only: true
+    no-global: all
+    context: scope # TODO: Use all
+    args-on-sep-lines: true
+
+  # TODO: spancheck
 
   stylecheck:
     checks:
@@ -197,6 +225,8 @@ linters-settings:
 
   testifylint:
     enable-all: true
+    formatter:
+      require-f-funcs: true
 
   testpackage:
     skip-regexp: "^$"
@@ -206,11 +236,10 @@ linters-settings:
     check-exported: true
 
   unused:
-    parameters-are-used: false
+    # parameters-are-used: false # TODO: Fix issue with this option (upstream)
     local-variables-are-used: false
     # NOTE: Set these options to true if other projects rely on this project's code
     field-writes-are-uses: false
-    # exported-is-used: false # TODO: Fix issues with this option (upstream)
     exported-fields-are-used: false
 
   usestdlibvars:
@@ -221,22 +250,13 @@ linters-settings:
     time-layout: true
     crypto-hash: true
     default-rpc-path: true
-    os-dev-null: true
     sql-isolation-level: true
     tls-signature-scheme: true
     constant-kind: true
-    syslog-priority: true
 
-issues:
-  exclude-use-default: false
-  exclude-case-sensitive: true
-  max-issues-per-linter: 0
-  max-same-issues: 0
-  exclude-rules:
-    - linters:
-        - goerr113
-      text: 'do not define dynamic errors, use wrapped static errors instead*'
-  # fix: true
+  usetesting:
+    os-setenv: true
+    os-temp-dir: true
 
 linters:
   enable:
@@ -244,25 +264,26 @@ linters:
     - asciicheck
     - bidichk
     - bodyclose
+    - canonicalheader
     - containedctx
     - contextcheck
+    - copyloopvar
     # - cyclop
-    - deadcode
     - decorder
     - depguard
     - dogsled
     # - dupl
     - dupword
     - durationcheck
+    - err113
     - errcheck
     - errchkjson
     - errname
     - errorlint
-    - execinquery
     - exhaustive
-    # - exhaustivestruct
     # - exhaustruct
-    - exportloopref
+    - exptostd
+    - fatcontext
     - forbidigo
     - forcetypeassert
     # - funlen
@@ -278,13 +299,10 @@ linters:
     # - gocyclo
     # - godot
     # - godox
-    - goerr113
     - gofmt
     - gofumpt
     # - goheader
     # - goimports
-    # - golint
-    - gomnd
     - gomoddirectives
     # - gomodguard
     - goprintffuncname
@@ -293,30 +311,30 @@ linters:
     - gosmopolitan
     - govet
     - grouper
-    - ifshort
+    - iface
     # - importas
     # - inamedparam
     - ineffassign
     # - interfacebloat
-    # - interfacer
+    - intrange
     # - ireturn
     # - lll
     - loggercheck
     # - maintidx
     - makezero
-    # - maligned
     - mirror
     - misspell
+    - mnd
     - musttag
     - nakedret
     # - nestif
     - nilerr
+    - nilnesserr
     - nilnil
     # - nlreturn
     - noctx
     - nolintlint
     - nonamedreturns
-    - nosnakecase
     - nosprintfhostport
     - paralleltest
     - perfsprint
@@ -325,14 +343,13 @@ linters:
     - promlinter
     - protogetter
     - reassign
+    - recvcheck
     - revive
     - rowserrcheck
-    - scopelint
     - sloglint
     - spancheck
     - sqlclosecheck
     - staticcheck
-    - structcheck
     - stylecheck
     - tagalign
     - tagliatelle
@@ -342,12 +359,11 @@ linters:
     - testpackage
     - thelper
     - tparallel
-    - typecheck
     - unconvert
     - unparam
     - unused
     - usestdlibvars
-    - varcheck
+    - usetesting
     # - varnamelen
     - wastedassign
     - whitespace

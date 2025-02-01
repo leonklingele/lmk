@@ -51,7 +51,7 @@ const (
 			reason text not null,
 			legal_basis text not null,
 			info text not null
-		);
+		) strict;
 		commit;
 	`
 	sqliteInsertStmt = `
@@ -93,7 +93,7 @@ type item struct {
 
 func sel2item(s *goquery.Selection) (*item, error) {
 	var ss []string
-	s.Each(func(_ int, s *goquery.Selection) { //nolint:unused // False positive
+	s.Each(func(_ int, s *goquery.Selection) {
 		ss = append(ss, trimText(s.Text()))
 	})
 
@@ -172,7 +172,7 @@ func loadItems(ctx context.Context, requestTimeout time.Duration, l *slog.Logger
 	}
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			l.Error(fmt.Errorf("failed to close body: %w", err).Error())
+			l.ErrorContext(ctx, fmt.Errorf("failed to close body: %w", err).Error())
 		}
 	}()
 
@@ -203,7 +203,7 @@ func loadItems(ctx context.Context, requestTimeout time.Duration, l *slog.Logger
 	errch := make(chan error, 1)
 	tbl.
 		Find(`tbody tr`).
-		EachWithBreak(func(_ int, s *goquery.Selection) bool { //nolint:unused // False positive
+		EachWithBreak(func(_ int, s *goquery.Selection) bool {
 			itm, err := sel2item(s.Find(`td`))
 			if err != nil {
 				details, err2 := s.Html()
@@ -241,7 +241,7 @@ func run( //nolint:revive // They are bool-options
 	ctx context.Context,
 	l *slog.Logger,
 	sqliteFile string,
-	newOnly bool,
+	newOnly,
 	printAsJSON bool,
 ) error {
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
@@ -267,7 +267,7 @@ func run( //nolint:revive // They are bool-options
 			if _, err := db.Exec(sqliteInitStmt); err != nil {
 				return fmt.Errorf("failed to init database: %w", err)
 			}
-			l.Info("successfully initialized database")
+			l.InfoContext(ctx, "successfully initialized database")
 		}
 
 		stmt, err := db.Prepare(sqliteInsertStmt)
@@ -276,7 +276,7 @@ func run( //nolint:revive // They are bool-options
 		}
 		defer func() {
 			if err := stmt.Close(); err != nil {
-				l.Error(fmt.Errorf("failed to close insert statement: %w", err).Error())
+				l.ErrorContext(ctx, fmt.Errorf("failed to close insert statement: %w", err).Error())
 			}
 		}()
 
@@ -306,7 +306,8 @@ func run( //nolint:revive // They are bool-options
 					continue
 				}
 
-				l.Error(
+				l.ErrorContext(
+					ctx,
 					"failed to exec insert statement",
 					"err", err,
 					"item", fmt.Sprintf("%+v", itm),
