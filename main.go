@@ -252,6 +252,7 @@ func run( //nolint:revive // They are bool-options
 		return err
 	}
 
+	//nolint:nestif // Quite complex but somewhat tolerable
 	if newOnly {
 		var isFirstRun bool
 		if _, err := os.Stat(sqliteFile); os.IsNotExist(err) {
@@ -321,6 +322,7 @@ func run( //nolint:revive // They are bool-options
 		items = newItems
 	}
 
+	//nolint:nestif // Quite complex but somewhat tolerable
 	if printAsJSON {
 		// Print as JSON
 		enc := json.NewEncoder(os.Stdout)
@@ -406,13 +408,15 @@ func main() {
 		ll.Set(slog.LevelDebug)
 	}
 
+	ctx := context.Background()
+
 	if err := run(
-		context.Background(),
+		ctx,
 		l,
 		sqliteFile,
 		*newOnly,
 		*printAsJSON,
 	); err != nil {
-		l.Error(err.Error())
+		l.ErrorContext(ctx, err.Error())
 	}
 }
