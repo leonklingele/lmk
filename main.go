@@ -139,6 +139,11 @@ func sel2item(s *goquery.Selection) (*item, error) {
 		Info:           info,
 	}
 
+	if strings.Contains(publishedAtStr, "/") { // 27.03.2025 / 28.03.2025
+		ss := strings.Split(publishedAtStr, "/")
+		publishedAtStr = ss[0]
+	}
+	publishedAtStr = trimText(publishedAtStr)
 	if strings.Contains(publishedAtStr, ".") { // Looks like a date
 		publishedAt, err := time.Parse(timeFormat, publishedAtStr)
 		if err != nil {
@@ -147,6 +152,11 @@ func sel2item(s *goquery.Selection) (*item, error) {
 		itm.PublishedAt = publishedAt
 	}
 
+	if strings.Contains(foundAtStr, "/") { // 27.03.2025 / 28.03.2025
+		ss := strings.Split(foundAtStr, "/")
+		foundAtStr = ss[0]
+	}
+	foundAtStr = trimText(foundAtStr)
 	if strings.Contains(foundAtStr, ".") { // Looks like a date
 		foundAt, err := time.Parse(timeFormat, foundAtStr)
 		if err != nil {
