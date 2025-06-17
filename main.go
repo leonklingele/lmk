@@ -99,15 +99,15 @@ func sel2item(s *goquery.Selection) (*item, error) {
 
 	// Generally, we expect 8 columns. However, for some rows, the last column (info) is missing, so we add an empty string
 	if got, want := len(ss), 8; got != want {
-		if got == 7 {
-			ss = append(ss, "") // Add empty string for missing info
-		} else {
+		if got != want-1 {
 			details, err := s.Html()
 			if err != nil {
 				details = err.Error()
 			}
 			return nil, fmt.Errorf("invalid number of parts found %d/%d: %s", got, want, details)
 		}
+
+		ss = append(ss, "") // Add empty string for missing info
 	}
 
 	for i, s := range ss {
