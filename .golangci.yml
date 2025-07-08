@@ -1,4 +1,4 @@
-# v2.0.1. Created based on golangci-lint v2.1.2
+# v2.1.0. Created based on golangci-lint v2.2.1
 version: "2"
 
 run:
@@ -22,6 +22,7 @@ formatters:
     - gofumpt
     - goimports
     # - golines # TODO
+    # - swaggo # TODO
   settings:
     gci:
       sections:
@@ -44,6 +45,7 @@ formatters:
 
 linters:
   enable:
+    # - arangolint
     - asasalint
     - asciicheck
     - bidichk
@@ -59,6 +61,7 @@ linters:
     # - dupl
     - dupword
     - durationcheck
+    - embeddedstructfieldcheck
     - err113
     - errcheck
     - errchkjson
@@ -113,6 +116,7 @@ linters:
     - nilnil
     # - nlreturn
     - noctx
+    # - noinlineerr
     - nolintlint
     - nonamedreturns
     - nosprintfhostport
@@ -147,6 +151,7 @@ linters:
     - whitespace
     - wrapcheck
     # - wsl
+    # - wsl_v5
     - zerologlint
   settings:
     asasalint:
@@ -182,6 +187,7 @@ linters:
       check-blank: true
       check-type-assertions: true
       disable-default-exclusions: true
+      verbose: true
     errchkjson:
       report-no-exported: true
     exhaustive:
@@ -346,6 +352,7 @@ linters:
     usestdlibvars:
       http-method: true
       http-status-code: true
+      time-date-month: true
       time-weekday: true
       time-month: true
       time-layout: true
@@ -356,6 +363,8 @@ linters:
       constant-kind: true
     usetesting:
       os-temp-dir: true
+      context-background: true
+      context-todo: true
   exclusions:
     generated: strict
     warn-unused: true
