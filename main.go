@@ -280,13 +280,13 @@ func run( //nolint:revive // They are bool-options
 		}
 
 		if isFirstRun {
-			if _, err := db.Exec(sqliteInitStmt); err != nil {
+			if _, err := db.ExecContext(ctx, sqliteInitStmt); err != nil {
 				return fmt.Errorf("failed to init database: %w", err)
 			}
 			l.InfoContext(ctx, "successfully initialized database")
 		}
 
-		stmt, err := db.Prepare(sqliteInsertStmt)
+		stmt, err := db.PrepareContext(ctx, sqliteInsertStmt)
 		if err != nil {
 			return fmt.Errorf("failed to prepare insert statement: %w", err)
 		}
@@ -305,7 +305,8 @@ func run( //nolint:revive // They are bool-options
 
 			hash := sha256.Sum256(buf.Bytes())
 
-			if _, err := stmt.Exec(
+			if _, err := stmt.ExecContext(
+				ctx,
 				hex.EncodeToString(hash[:]),
 				itm.Authority,
 				itm.PublishedAt,
