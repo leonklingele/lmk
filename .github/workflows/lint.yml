@@ -67,7 +67,7 @@ jobs:
             GOPATH="$PWD/.gopath" go install github.com/w1ck3dg0ph3r/goptrcmp/cmd/goptrcmp@latest && \
             "$PWD/.gopath/bin/goptrcmp" ./... \
           '
-          nix-shell --pure --run "$CMD" || true # TODO: Fail again once Go 1.24 is supported, see https://github.com/w1ck3dg0ph3r/goptrcmp/issues/3
+          nix-shell --pure --run "$CMD"
 
   untypedconst:
     strategy:
@@ -81,11 +81,12 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: |
+          # TODO: Switch to jiftechnify/untypedconst once https://github.com/jiftechnify/untypedconst/issues/10 is resolved
           CMD='\
-            GOPATH="$PWD/.gopath" go install github.com/jiftechnify/untypedconst/cmd/untypedconst@latest && \
+            GOPATH="$PWD/.gopath" go install github.com/leonklingele/untypedconst/cmd/untypedconst@latest && \
             "$PWD/.gopath/bin/untypedconst" ./... \
           '
-          nix-shell --pure --run "$CMD" || true # TODO: Fail again once Go 1.24 is supported, see https://github.com/jiftechnify/untypedconst/issues/10
+          nix-shell --pure --run "$CMD"
 
   govanish:
     strategy:
@@ -103,4 +104,4 @@ jobs:
             GOPATH="$PWD/.gopath" go install github.com/sivukhin/govanish@latest && \
             "$PWD/.gopath/bin/govanish" \
           '
-          nix-shell --pure --run "$CMD" || true # TODO: Fail again once Go 1.24 is supported, see https://github.com/sivukhin/govanish/issues/3
+          nix-shell --pure --run "$CMD"
