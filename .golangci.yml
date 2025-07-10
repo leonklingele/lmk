@@ -1,4 +1,4 @@
-# v2.1.0. Created based on golangci-lint v2.2.1
+# v2.2.0. Created based on golangci-lint v2.2.1
 version: "2"
 
 run:
@@ -41,6 +41,7 @@ formatters:
       local-prefixes:
         - github.com/leonklingele/lmk
   exclusions:
+    warn-unused: true
     generated: strict
 
 linters:
@@ -85,7 +86,7 @@ linters:
     - gocritic
     # - gocyclo
     # - godot
-    # - godox
+    - godox
     # - goheader
     - gomoddirectives
     # - gomodguard
@@ -96,7 +97,7 @@ linters:
     - grouper
     - iface
     # - importas
-    # - inamedparam
+    - inamedparam
     - ineffassign
     # - interfacebloat
     - intrange
@@ -168,21 +169,21 @@ linters:
             - pkg: io/ioutil
               desc: "`io/ioutil` package is deprecated, use the `io` and `os` package instead"
             - pkg: log$
-              desc: logging is provided by `log/slog`
+              desc: "logging is provided by `log/slog`"
             - pkg: math/rand$
-              desc: use `math/rand/v2` instead
+              desc: "use `math/rand/v2` instead"
             - pkg: reflect
               desc: "`reflect` package is dangerous to use"
             - pkg: unsafe
               desc: "`unsafe` package is dangerous to use"
             - pkg: golang.org/x/crypto/ed25519
-              desc: now part of the stdlib, use `crypto/ed25519` instead
+              desc: "now part of the stdlib, use `crypto/ed25519` instead"
             - pkg: golang.org/x/crypto/hkdf
-              desc: now part of the stdlib, use `crypto/hkdf` instead
+              desc: "now part of the stdlib, use `crypto/hkdf` instead"
             - pkg: golang.org/x/crypto/pbkdf2
-              desc: now part of the stdlib, use `crypto/pbkdf2` instead
+              desc: "now part of the stdlib, use `crypto/pbkdf2` instead"
             - pkg: golang.org/x/crypto/sha3
-              desc: now part of the stdlib, use `crypto/sha3` instead
+              desc: "now part of the stdlib, use `crypto/sha3` instead"
     errcheck:
       check-blank: true
       check-type-assertions: true
@@ -226,11 +227,14 @@ linters:
         # NOTE: Set this option to false if other projects rely on this project's code
         unnamedResult:
           checkExported: true
+    godox:
+      keywords:
+        - FIXME
     gosec:
-      confidence: low
       config:
         global:
           audit: true
+          nosec: true
           show-ignored: true
     govet:
       enable-all: true
@@ -314,12 +318,12 @@ linters:
       directives:
         - name: specify-disable-reason
           severity: error
-    # TODO: spancheck
     sloglint:
       kv-only: true
       no-global: all
       context: all
       args-on-sep-lines: true
+    # TODO: spancheck
     staticcheck:
       checks:
         - all
@@ -335,8 +339,6 @@ linters:
           json: snake
     testifylint:
       enable-all: true
-      formatter:
-        require-f-funcs: false
     testpackage:
       skip-regexp: ^$
     unparam:
@@ -347,8 +349,9 @@ linters:
       field-writes-are-uses: false
       # NOTE: Set this option to true if other projects rely on this project's code
       exported-fields-are-used: false
+      # TODO: Set to false once https://github.com/dominikh/go-tools/issues/1567 is fixed
+      parameters-are-used: true
       local-variables-are-used: false
-      # parameters-are-used: false # TODO: Fix issue with this option (upstream)
     usestdlibvars:
       http-method: true
       http-status-code: true
@@ -366,7 +369,6 @@ linters:
       context-background: true
       context-todo: true
   exclusions:
-    generated: strict
     warn-unused: true
     rules:
       - linters:
