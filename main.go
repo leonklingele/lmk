@@ -130,8 +130,14 @@ func sel2item(s *goquery.Selection) (*item, error) {
 		ss[6],
 		ss[7]
 
+	publishedAtStr = strings.Split(publishedAtStr, "/")[0]     // 27.03.2025 / 28.03.2025
+	publishedAtStr = strings.Split(publishedAtStr, " und ")[0] // 10.06.2025 und 25.06.2025
+	publishedAtStr = strings.Split(publishedAtStr, " bis ")[0] // 10.06.2025 bis 25.06.2025
+
 	foundAtStr = strings.TrimSuffix(foundAtStr, "z")   // Theres one item with a trailing "z"
-	foundAtStr = strings.Split(foundAtStr, " und ")[0] // Theres one item with multiple dates
+	foundAtStr = strings.Split(foundAtStr, "/")[0]     // 27.03.2025 / 28.03.2025
+	foundAtStr = strings.Split(foundAtStr, " und ")[0] // 10.06.2025 und 25.06.2025
+	foundAtStr = strings.Split(foundAtStr, " bis ")[0] // 10.06.2025 bis 25.06.2025
 
 	itm := &item{
 		Authority:      authority,
@@ -144,10 +150,6 @@ func sel2item(s *goquery.Selection) (*item, error) {
 		Info:           info,
 	}
 
-	if strings.Contains(publishedAtStr, "/") { // 27.03.2025 / 28.03.2025
-		ss := strings.Split(publishedAtStr, "/")
-		publishedAtStr = ss[0]
-	}
 	publishedAtStr = trimText(publishedAtStr)
 	if strings.Contains(publishedAtStr, ".") { // Looks like a date
 		publishedAt, err := time.Parse(timeFormat, publishedAtStr)
@@ -157,10 +159,6 @@ func sel2item(s *goquery.Selection) (*item, error) {
 		itm.PublishedAt = publishedAt
 	}
 
-	if strings.Contains(foundAtStr, "/") { // 27.03.2025 / 28.03.2025
-		ss := strings.Split(foundAtStr, "/")
-		foundAtStr = ss[0]
-	}
 	foundAtStr = trimText(foundAtStr)
 	if strings.Contains(foundAtStr, ".") { // Looks like a date
 		foundAt, err := time.Parse(timeFormat, foundAtStr)
