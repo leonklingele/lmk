@@ -4,72 +4,108 @@ on:
   - push
   - workflow_dispatch
 
-permissions: read-all
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   shellcheck:
+    name: shellcheck
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: nix-shell --pure -p git shellcheck --run "git ls-files --exclude='*.sh' --ignored -c -z | xargs -0r shellcheck"
 
-  find-git-merge-conflict-marker:
+  yamllint:
+    name: yamllint
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
+      - run: |
+          nix-shell --pure -p yamllint --run "yamllint -d '{extends: default, rules: {line-length: {level: warning}}}' ."
+
+  find-git-merge-conflict-marker:
+    name: find-git-merge-conflict-marker
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
+        with:
+          nix_path: nixpkgs=channel:nixos-25.05
+      - run: nix-shell --pure -p git --run 'git diff-index --check "$(git hash-object -t tree /dev/null)"'
       - run: nix-shell --pure -p git --run "(git grep -rnlP '[<]{7}.*' | xargs git grep -rnlP '[=]{7}.*' | xargs git grep -rnlP '[>]{7}.*') && exit 1 || exit 0"
 
   gitleaks:
+    name: gitleaks
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
+          persist-credentials: false
           fetch-depth: 0
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: nix-shell --pure -p git gitleaks --run 'gitleaks detect --source . -v'
 
   osv-scanner:
+    name: osv-scanner
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: nix-shell --pure -p osv-scanner go --run 'osv-scanner scan source -r --no-ignore . ; EXITCODE=$? ; test $EXITCODE -eq 128 || exit $EXITCODE' || true
 
   dotenv:
+    name: dotenv
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: nix-shell --pure -p dotenv-linter --run 'dotenv-linter --skip QuoteCharacter --skip UnorderedKey'

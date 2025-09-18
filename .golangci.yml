@@ -1,4 +1,4 @@
-# v2.2.0. Created based on golangci-lint v2.2.1
+# v2.4.0. Created based on golangci-lint v2.4.0
 version: "2"
 
 run:
@@ -27,19 +27,14 @@ formatters:
     gci:
       sections:
         - standard
-        # - localmodule # TODO: Investigate why this doesn't work
-        - prefix(github.com/leonklingele/lmk)
+        - localmodule
         - default
         - blank
         - dot
         # - alias
       custom-order: true
     gofumpt:
-      module-path: github.com/leonklingele/lmk
       extra-rules: true
-    goimports:
-      local-prefixes:
-        - github.com/leonklingele/lmk
   exclusions:
     warn-unused: true
     generated: strict
@@ -199,8 +194,8 @@ linters:
       forbid:
         - pattern: ^panic$
         - pattern: ^print(ln)?$
-        - pattern: ^fmt\.Print(f|ln)?$
-        - pattern: ^http\.Default(Client|ServeMux|Transport)$
+        - pattern: ^fmt\.Print.*$
+        - pattern: ^http\.Default.*$
         - pattern: ^time\.Sleep$
       analyze-types: true
     funcorder:
@@ -265,6 +260,8 @@ linters:
       qualified-name: true
     promlinter:
       strict: true
+    nakedret:
+      max-func-lines: 0
     reassign:
       patterns:
         - .*
@@ -276,16 +273,8 @@ linters:
         # Provided by mnd linter
         - name: add-constant
           disabled: true
-        - name: argument-limit
-          disabled: true
-        # Provided by bidichk
-        - name: banned-characters
-          disabled: true
         - name: cognitive-complexity
           disabled: true
-        - name: comment-spacings
-          arguments:
-            - nolint
         - name: cyclomatic
           disabled: true
         - name: enforce-repeated-arg-type-style
@@ -300,9 +289,6 @@ linters:
           disabled: true
         - name: function-length
           disabled: true
-        - name: function-result-limit
-          arguments:
-            - 3
         - name: line-length-limit
           disabled: true
         - name: max-public-structs
