@@ -37,15 +37,14 @@ const (
 const (
 	defaultSQLiteFilePath = "./db.sqlite"
 
-	//nolint:dupword // False positive
 	sqliteInitStmt = `
 		begin;
 		create table items (
 			id integer primary key not null,
-			hash text text unique not null,
+			hash text unique not null,
 			authority text not null,
-			published_at datetime not null,
-			found_at datetime not null,
+			published_at text not null,
+			found_at text not null,
 			name text not null,
 			address text not null,
 			reason text not null,

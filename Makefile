@@ -1,5 +1,15 @@
+SHELL := bash
+.SHELLFLAGS := -euo pipefail -c
+.DEFAULT_GOAL := all
+.DELETE_ON_ERROR:
+MAKEFLAGS += --no-builtin-rules
+MAKEFLAGS += --jobs
+MAKEFLAGS += --shuffle=random
+MAKEFLAGS += --warn-undefined-variables
+
 BINARY_OUT ?= ./lmk
 CMD_DIR := ./
+CGO_ENABLED ?= 0
 
 TEST_COVERAGE_OUT := ./.gocoverage
 
@@ -16,14 +26,14 @@ lint:
 
 .PHONY: test-fast
 test-fast:
-	go test -v \
+	CGO_ENABLED="${CGO_ENABLED}" go test -v \
 		-shuffle on \
 		-failfast \
 		./...
 
 .PHONY: test
 test: test-fast
-	go test -v \
+	CGO_ENABLED="1" go test -v \
 		-shuffle on \
 		-vet=all \
 		-race \
@@ -38,7 +48,7 @@ test-cover-open: test
 BUILD_FLAGS ?=
 .PHONY: build
 build:
-	go build -v \
+	CGO_ENABLED="${CGO_ENABLED}" go build -v \
 		-o "${BINARY_OUT}" \
 		${BUILD_FLAGS} \
 		"${CMD_DIR}"
@@ -46,7 +56,9 @@ build:
 DEBUG ?= true
 .PHONY: run
 run:
-	DEBUG="${DEBUG}" air -c ./.air.toml
+	DEBUG="${DEBUG}" \
+	CGO_ENABLED="${CGO_ENABLED}" \
+		air -c ./.air.toml
 
 .PHONY: clean
 clean:

@@ -4,44 +4,122 @@ on:
   - push
   - workflow_dispatch
 
-permissions: read-all
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
+  # TODO: go vet should be part of golangci-lint already. Verify this.
   go-vet:
+    name: go-vet
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: nix-shell --pure --run 'go vet -v ./...'
 
-  golangci-lint:
+  go-maprange:
+    name: go-maprange
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
+        with:
+          nix_path: nixpkgs=channel:nixos-25.05
+      - run: |
+          CMD='\
+            GOPATH="$PWD/.gopath" go install golang.org/x/tools/gopls/internal/analysis/maprange/cmd/maprange@latest && \
+            "$PWD/.gopath/bin/maprange" ./... \
+          '
+          nix-shell --pure --run "$CMD"
+
+  go-modernize:
+    name: go-modernize
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
+        with:
+          nix_path: nixpkgs=channel:nixos-25.05
+      - run: |
+          CMD='\
+            GOPATH="$PWD/.gopath" go install golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest && \
+            "$PWD/.gopath/bin/modernize" ./... \
+          '
+          nix-shell --pure --run "$CMD"
+
+  go-unusedparams:
+    name: go-unusedparams
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
+        with:
+          nix_path: nixpkgs=channel:nixos-25.05
+      - run: |
+          CMD='\
+            GOPATH="$PWD/.gopath" go install golang.org/x/tools/gopls/internal/analysis/unusedparams/cmd@latest && \
+            mv "$PWD/.gopath/bin/cmd" "$PWD/.gopath/bin/unusedparams" && \
+            "$PWD/.gopath/bin/unusedparams" ./... \
+          '
+          nix-shell --pure --run "$CMD"
+
+  golangci-lint:
+    name: golangci-lint
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: nix-shell --pure --run 'make lint'
 
   ls-lint:
+    name: ls-lint
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: |
@@ -52,14 +130,17 @@ jobs:
       - run: nix-shell --pure -p ls-lint --run 'command -v ls_lint &> /dev/null && ls_lint || ls-lint'
 
   goptrcmp:
+    name: goptrcmp
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: |
@@ -70,14 +151,17 @@ jobs:
           nix-shell --pure --run "$CMD"
 
   untypedconst:
+    name: untypedconst
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: |
@@ -89,14 +173,17 @@ jobs:
           nix-shell --pure --run "$CMD"
 
   govanish:
+    name: govanish
     strategy:
       matrix:
         platform:
           - ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
         with:
           nix_path: nixpkgs=channel:nixos-25.05
       - run: |
