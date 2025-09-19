@@ -8,8 +8,10 @@ import (
 	"encoding/gob"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"flag" //nolint:depguard // We only allow to import the flag package in here
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,8 +21,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jedib0t/go-pretty/v6/table"
-
-	_ "modernc.org/sqlite"
+	"modernc.org/sqlite"
 )
 
 const (
@@ -267,7 +268,7 @@ func run( //nolint:revive // They are bool-options
 	//nolint:nestif // Quite complex but somewhat tolerable
 	if newOnly {
 		var isFirstRun bool
-		if _, err := os.Stat(sqliteFile); os.IsNotExist(err) {
+		if _, err := os.Stat(sqliteFile); errors.Is(err, fs.ErrNotExist) {
 			isFirstRun = true
 		}
 
@@ -314,8 +315,10 @@ func run( //nolint:revive // They are bool-options
 				itm.LegalBasis,
 				itm.Info,
 			); err != nil {
-				// TODO: Properly check for error, see https://gitlab.com/cznic/sqlite/-/blob/f49aba7eddcec7d31797e72c67aafb0398970730/all_test.go#L2228
-				if got, want := err.Error(), "constraint failed: UNIQUE constraint failed: items.hash (2067)"; got == want {
+				// Allow "UNIQUE constraint" errors.
+				// Error code taken from https://www.sqlite.org/rescode.html#constraint_unique
+				var serr *sqlite.Error
+				if errors.As(err, &serr) && serr.Code() == 2067 {
 					// This is fine
 					continue
 				}
