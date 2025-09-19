@@ -125,3 +125,118 @@ jobs:
               .github
           '
           nix-shell --pure -p zizmor --run "$CMD"
+
+  semgrep:
+    name: semgrep
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@7be5dee1421f63d07e71ce6e0a9f8a4b07c2a487 # v31.6.1
+        with:
+          nix_path: nixpkgs=channel:nixos-25.05
+      # Run all available semgrep rules. A list of all rules can be retrieved as follows:
+      # $ curl -s 'https://semgrep.dev/api/registry/rulesets' \
+      #   | jq -r --arg prefix "--config 'p/" --arg suffix "'" \
+      #   '.[] | select(.hidden != true) | $prefix + .name + $suffix' | sort -n
+      - run: |
+          CMD='\
+            semgrep scan \
+              --metrics=off \
+              --error \
+              --strict \
+              --disable-nosem \
+              --disable-version-check \
+              --timeout-threshold=0 \
+              --verbose \
+              --config 'p/apex' \
+              --config 'p/bandit' \
+              --config 'p/brakeman' \
+              --config 'p/c' \
+              --config 'p/c-audit-banned-functions' \
+              --config 'p/colleend.test' \
+              --config 'p/command-injection' \
+              --config 'p/comment' \
+              --config 'p/cpp-audit' \
+              --config 'p/csharp' \
+              --config 'p/cwe-top-25' \
+              --config 'p/default' \
+              --config 'p/django' \
+              --config 'p/docker' \
+              --config 'p/docker-compose' \
+              --config 'p/dockerfile' \
+              --config 'p/elixir' \
+              --config 'p/eslint' \
+              --config 'p/expressjs' \
+              --config 'p/fastapi' \
+              --config 'p/findsecbugs' \
+              --config 'p/flask' \
+              --config 'p/flawfinder' \
+              --config 'p/github-actions' \
+              --config 'p/gitlab' \
+              --config 'p/gitlab-bandit' \
+              --config 'p/gitlab-eslint' \
+              --config 'p/gitleaks' \
+              --config 'p/golang' \
+              --config 'p/gosec' \
+              --config 'p/hapi' \
+              --config 'p/headless-browser' \
+              --config 'p/helper_scripts.c' \
+              --config 'p/helper_scripts.insecure-transport-jsnode' \
+              --config 'p/insecure-transport' \
+              --config 'p/java' \
+              --config 'p/javascript' \
+              --config 'p/jwt' \
+              --config 'p/koa' \
+              --config 'p/kotlin' \
+              --config 'p/kubernetes' \
+              --config 'p/lockfiles' \
+              --config 'p/minusworld.sql-injection' \
+              --config 'p/mobsfscan' \
+              --config 'p/nestjs' \
+              --config 'p/nextjs' \
+              --config 'p/nginx' \
+              --config 'p/nodejs' \
+              --config 'p/ocaml' \
+              --config 'p/owasp-top-ten' \
+              --config 'p/php' \
+              --config 'p/php-laravel' \
+              --config 'p/phpcs-security-audit' \
+              --config 'p/play' \
+              --config 'p/python' \
+              --config 'p/r2c-best-practices' \
+              --config 'p/r2c-bug-scan' \
+              --config 'p/r2c-security-audit' \
+              --config 'p/react' \
+              --config 'p/react-best-practices' \
+              --config 'p/react-team-tier' \
+              --config 'p/replit-community' \
+              --config 'p/ruby' \
+              --config 'p/rust' \
+              --config 'p/scala' \
+              --config 'p/secrets' \
+              --config 'p/secure-defaults' \
+              --config 'p/security-audit' \
+              --config 'p/security-code-scan' \
+              --config 'p/security-headers' \
+              --config 'p/semgrep-go-correctness' \
+              --config 'p/semgrep-misconfigurations' \
+              --config 'p/semgrep-rule-ci' \
+              --config 'p/semgrep-rule-lints' \
+              --config 'p/shadow-ai' \
+              --config 'p/smart-contracts' \
+              --config 'p/sql-injection' \
+              --config 'p/supply-chain' \
+              --config 'p/swift' \
+              --config 'p/terraform' \
+              --config 'p/trailofbits' \
+              --config 'p/typescript' \
+              --config 'p/wordpress' \
+              --config 'p/xss' \
+            '
+          nix-shell --pure -p semgrep --run "$CMD"
