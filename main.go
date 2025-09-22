@@ -15,8 +15,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"slices"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -185,7 +187,7 @@ func loadItems(ctx context.Context, requestTimeout time.Duration, l *slog.Logger
 	}
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			l.ErrorContext(ctx, fmt.Errorf("failed to close body: %w", err).Error())
+			l.ErrorContext(ctx, "failed to close body", slog.Any("error", err))
 		}
 	}()
 
@@ -290,7 +292,7 @@ func run( //nolint:revive // They are bool-options
 		}
 		defer func() {
 			if err := stmt.Close(); err != nil {
-				l.ErrorContext(ctx, fmt.Errorf("failed to close insert statement: %w", err).Error())
+				l.ErrorContext(ctx, "failed to close insert statement", slog.Any("error", err))
 			}
 		}()
 
@@ -323,11 +325,10 @@ func run( //nolint:revive // They are bool-options
 					continue
 				}
 
-				l.ErrorContext(
-					ctx,
+				l.ErrorContext(ctx,
 					"failed to exec insert statement",
-					"err", err,
-					"item", fmt.Sprintf("%+v", itm),
+					slog.Any("err", err),
+					slog.Any("item", itm),
 				)
 				continue
 			}
@@ -338,7 +339,6 @@ func run( //nolint:revive // They are bool-options
 		items = newItems
 	}
 
-	//nolint:nestif // Quite complex but somewhat tolerable
 	if printAsJSON {
 		// Print as JSON
 		enc := json.NewEncoder(os.Stdout)
@@ -389,10 +389,8 @@ func run( //nolint:revive // They are bool-options
 			t.AppendRow(row)
 		}
 
-		//nolint:forbidigo // We explicitly want to print to stdout
-		if _, err := fmt.Println(t.Render()); err != nil {
-			return fmt.Errorf("failed to print to stdout: %w", err)
-		}
+		//nolint:errcheck,forbidigo // We explicitly want to print to stdout
+		fmt.Println(t.Render())
 	}
 
 	return nil
@@ -411,7 +409,8 @@ func main() {
 	ll := new(slog.LevelVar)
 	ll.Set(slog.LevelInfo)
 	l := slog.New(slog.NewJSONHandler(logTarget, &slog.HandlerOptions{
-		Level: ll,
+		Level:     ll,
+		AddSource: true,
 	}))
 	slog.SetDefault(l)
 
@@ -424,7 +423,7 @@ func main() {
 		ll.Set(slog.LevelDebug)
 	}
 
-	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	if err := run(
 		ctx,
@@ -433,6 +432,9 @@ func main() {
 		*newOnly,
 		*printAsJSON,
 	); err != nil {
-		l.ErrorContext(ctx, err.Error())
+		l.ErrorContext(ctx, err.Error()) //nolint:sloglint // Fine to do in main
+		cancel()
+		os.Exit(1)
 	}
+	cancel()
 }
