@@ -1,4 +1,4 @@
-# v2.4.0. Created based on golangci-lint v2.4.0
+# v2.5.0. Created based on golangci-lint v2.5.0
 version: "2"
 
 run:
@@ -33,6 +33,12 @@ formatters:
         - dot
         # - alias
       custom-order: true
+    gofmt:
+      rewrite-rules:
+        - pattern: interface{}
+          replacement: any
+        - pattern: a[b:len(a)]
+          replacement: a[b:]
     gofumpt:
       extra-rules: true
   exclusions:
@@ -80,11 +86,12 @@ linters:
     - goconst
     - gocritic
     # - gocyclo
+    # - godoclint
     # - godot
     - godox
     # - goheader
     - gomoddirectives
-    # - gomodguard
+    - gomodguard
     - goprintffuncname
     - gosec
     - gosmopolitan
@@ -96,6 +103,7 @@ linters:
     - ineffassign
     # - interfacebloat
     - intrange
+    - iotamixing
     # - ireturn
     # - lll
     - loggercheck
@@ -139,6 +147,7 @@ linters:
     - tparallel
     - unconvert
     - unparam
+    - unqueryvet
     - unused
     - usestdlibvars
     - usetesting
@@ -202,6 +211,7 @@ linters:
       struct-method: false
     ginkgolinter:
       force-expect-to: true
+      force-tonot: true
     goconst:
       numbers: true
       find-duplicates: true
@@ -224,7 +234,11 @@ linters:
           checkExported: true
     godox:
       keywords:
+        - BUG
+        - DEBUG
         - FIXME
+    gomoddirectives:
+      go-debug-forbidden: true
     gosec:
       config:
         global:
@@ -235,7 +249,9 @@ linters:
       enable-all: true
       disable:
         - fieldalignment
-        - shadow
+      settings:
+        shadow:
+          strict: true
     grouper:
       const-require-grouping: true
       import-require-single-import: true
@@ -246,6 +262,8 @@ linters:
       no-printf-like: true
     misspell:
       locale: US
+    nakedret:
+      max-func-lines: 0
     nilnil:
       only-two: false
       detect-opposite: true
@@ -260,8 +278,6 @@ linters:
       qualified-name: true
     promlinter:
       strict: true
-    nakedret:
-      max-func-lines: 0
     reassign:
       patterns:
         - .*
@@ -305,12 +321,15 @@ linters:
         - name: specify-disable-reason
           severity: error
     sloglint:
-      kv-only: true
+      attr-only: true
       no-global: all
       context: all
+      static-msg: true
+      msg-style: lowercased
+      key-naming-style: snake
       args-on-sep-lines: true
-    # TODO: spancheck
     staticcheck:
+      http-status-code-whitelist: []
       checks:
         - all
         - -ST1000
@@ -355,8 +374,10 @@ linters:
       context-background: true
       context-todo: true
   exclusions:
-    warn-unused: true
     rules:
       - linters:
           - err113
         text: (?i)do not define dynamic errors, use wrapped static errors instead*
+      - linters:
+          - govet
+        text: declaration of "(ctx|err)" shadows
