@@ -1,4 +1,4 @@
-# v2.5.0. Created based on golangci-lint v2.5.0
+# v2.5.1. Created based on golangci-lint v2.5.0
 version: "2"
 
 run:
@@ -21,8 +21,8 @@ formatters:
     - gofmt
     - gofumpt
     - goimports
-    # - golines # TODO
-    # - swaggo # TODO
+    - golines
+    - swaggo
   settings:
     gci:
       sections:
@@ -42,7 +42,6 @@ formatters:
     gofumpt:
       extra-rules: true
   exclusions:
-    warn-unused: true
     generated: strict
 
 linters:
@@ -163,6 +162,8 @@ linters:
       use-builtin-exclusions: false
     copyloopvar:
       check-alias: true
+    decorder:
+      disable-init-func-first-check: false
     depguard:
       rules:
         all:
@@ -188,6 +189,8 @@ linters:
               desc: "now part of the stdlib, use `crypto/pbkdf2` instead"
             - pkg: golang.org/x/crypto/sha3
               desc: "now part of the stdlib, use `crypto/sha3` instead"
+    embeddedstructfieldcheck:
+      forbid-mutex: true
     errcheck:
       check-blank: true
       check-type-assertions: true
@@ -227,6 +230,8 @@ linters:
           paramsOnly: false
         elseif:
           skipBalanced: false
+        truncateCmp:
+          skipArchDependent: false
         underef:
           skipRecvDeref: false
         # NOTE: Set this option to false if other projects rely on this project's code
@@ -256,7 +261,6 @@ linters:
       const-require-grouping: true
       import-require-single-import: true
       import-require-grouping: true
-      # var-require-grouping: true # TODO: Conflicts with gofumpt
     loggercheck:
       require-string-key: true
       no-printf-like: true
@@ -358,10 +362,7 @@ linters:
       parameters-are-used: true
       local-variables-are-used: false
     usestdlibvars:
-      http-method: true
-      http-status-code: true
       time-date-month: true
-      time-weekday: true
       time-month: true
       time-layout: true
       crypto-hash: true

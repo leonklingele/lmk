@@ -73,9 +73,6 @@ const (
 	`
 )
 
-//nolint:gochecknoglobals // Nice to use as a global
-var logTarget = os.Stderr
-
 func trimText(t string) string {
 	return strings.Trim(t, " \t\r\n")
 }
@@ -173,7 +170,11 @@ func sel2item(s *goquery.Selection) (*item, error) {
 	return itm, nil
 }
 
-func loadItems(ctx context.Context, requestTimeout time.Duration, l *slog.Logger) ([]*item, error) {
+func loadItems(
+	ctx context.Context,
+	logger *slog.Logger,
+	requestTimeout time.Duration,
+) ([]*item, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, lmkURL, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -187,7 +188,7 @@ func loadItems(ctx context.Context, requestTimeout time.Duration, l *slog.Logger
 	}
 	defer func() {
 		if err := res.Body.Close(); err != nil {
-			l.ErrorContext(ctx, "failed to close body", slog.Any("error", err))
+			logger.WarnContext(ctx, "failed to close body", slog.Any("error", err))
 		}
 	}()
 
@@ -254,7 +255,7 @@ func capstring(s string, l int) string { //nolint:unparam // False positive
 
 func run( //nolint:revive // They are bool-options
 	ctx context.Context,
-	l *slog.Logger,
+	logger *slog.Logger,
 	sqliteFile string,
 	newOnly,
 	printAsJSON bool,
@@ -262,7 +263,7 @@ func run( //nolint:revive // They are bool-options
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
 
-	items, err := loadItems(ctx, requestTimeout, l)
+	items, err := loadItems(ctx, logger, requestTimeout)
 	if err != nil {
 		return err
 	}
@@ -283,7 +284,7 @@ func run( //nolint:revive // They are bool-options
 			if _, err := db.ExecContext(ctx, sqliteInitStmt); err != nil {
 				return fmt.Errorf("failed to init database: %w", err)
 			}
-			l.InfoContext(ctx, "successfully initialized database")
+			logger.InfoContext(ctx, "successfully initialized database")
 		}
 
 		stmt, err := db.PrepareContext(ctx, sqliteInsertStmt)
@@ -292,7 +293,7 @@ func run( //nolint:revive // They are bool-options
 		}
 		defer func() {
 			if err := stmt.Close(); err != nil {
-				l.ErrorContext(ctx, "failed to close insert statement", slog.Any("error", err))
+				logger.WarnContext(ctx, "failed to close insert statement", slog.Any("error", err))
 			}
 		}()
 
@@ -325,7 +326,7 @@ func run( //nolint:revive // They are bool-options
 					continue
 				}
 
-				l.ErrorContext(ctx,
+				logger.ErrorContext(ctx,
 					"failed to exec insert statement",
 					slog.Any("err", err),
 					slog.Any("item", itm),
@@ -396,45 +397,51 @@ func run( //nolint:revive // They are bool-options
 	return nil
 }
 
+func getenv(key, fallback string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	return v
+}
+
 func main() {
-	newOnly := flag.Bool("new", false, "new items only")
-	printAsJSON := flag.Bool("json", false, "print as JSON")
+	// Env vars
+	var (
+		logLevel = getenv("LOG_LEVEL", slog.LevelInfo.String())
 
-	debug := flag.Bool("debug", false, "enable debug mode")
+		sqliteFile = getenv("SQLITE_FILE", defaultSQLiteFilePath)
+	)
 
+	// Flags
+	var (
+		newOnly     = flag.Bool("new", false, "new items only")
+		printAsJSON = flag.Bool("json", false, "print as JSON")
+	)
 	flag.Parse()
 
-	sqliteFile := getenv("SQLITE_FILE", defaultSQLiteFilePath)
-
-	ll := new(slog.LevelVar)
-	ll.Set(slog.LevelInfo)
-	l := slog.New(slog.NewJSONHandler(logTarget, &slog.HandlerOptions{
-		Level:     ll,
+	var ll slog.LevelVar
+	if err := ll.UnmarshalText([]byte(logLevel)); err != nil {
+		//nolint:forbidigo // Fine to panic in main
+		panic(fmt.Errorf("unsupported log level: %s", logLevel))
+	}
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level:     &ll,
 		AddSource: true,
 	}))
-	slog.SetDefault(l)
+	slog.SetDefault(logger)
 
-	// We have a debug env var as well as a debug CLI flag
-	if getenv("DEBUG", "false") == "true" {
-		*debug = true
-	}
-
-	if *debug {
-		ll.Set(slog.LevelDebug)
-	}
-
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	ctx, sstop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer sstop()
 
 	if err := run(
 		ctx,
-		l,
+		logger,
 		sqliteFile,
 		*newOnly,
 		*printAsJSON,
 	); err != nil {
-		l.ErrorContext(ctx, err.Error()) //nolint:sloglint // Fine to do in main
-		cancel()
-		os.Exit(1)
+		logger.ErrorContext(ctx, "failed to run", slog.Any("error", err))
+		os.Exit(1) //nolint:gocritic // Fine to not run deferred sstop
 	}
-	cancel()
 }

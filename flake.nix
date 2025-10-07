@@ -19,6 +19,8 @@
         unstable = import nixpkgs-unstable { inherit system; };
       in
       {
+        formatter = pkgs.nixfmt-tree;
+
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [
             pkgs.gnumake
