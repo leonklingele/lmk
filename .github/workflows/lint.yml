@@ -11,7 +11,6 @@ defaults:
     shell: bash
 
 jobs:
-  # TODO: go vet should be part of golangci-lint already. Verify this.
   go-vet:
     name: go-vet
     strategy:
@@ -127,7 +126,7 @@ jobs:
             ls:
               .go: snake_case
           EOF
-      - run: nix-shell --pure -p ls-lint --run 'command -v ls_lint &> /dev/null && ls_lint || ls-lint'
+      - run: nix-shell --pure -p ls-lint --run 'ls_lint'
 
   goptrcmp:
     name: goptrcmp
