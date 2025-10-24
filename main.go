@@ -92,8 +92,10 @@ type item struct {
 
 func sel2item(s *goquery.Selection) (*item, error) {
 	var ss []string
+	var rss []*goquery.Selection
 	s.Each(func(_ int, s *goquery.Selection) {
 		ss = append(ss, trimText(s.Text()))
+		rss = append(rss, s)
 	})
 
 	// Generally, we expect 8 columns. However, for some rows, the last column (info) is missing, so we add an empty string
@@ -132,6 +134,13 @@ func sel2item(s *goquery.Selection) (*item, error) {
 	publishedAtStr = strings.Split(publishedAtStr, "/")[0]     // 27.03.2025 / 28.03.2025
 	publishedAtStr = strings.Split(publishedAtStr, " und ")[0] // 10.06.2025 und 25.06.2025
 	publishedAtStr = strings.Split(publishedAtStr, " bis ")[0] // 10.06.2025 bis 25.06.2025
+
+	// Handle found at with multiple date strings inside
+	if n := rss[4].Find(".text p"); n != nil {
+		if t, err := n.Html(); err == nil && strings.Contains(t, ".") {
+			foundAtStr = strings.ReplaceAll(t, "<br/>", " / ")
+		}
+	}
 
 	foundAtStr = strings.TrimSuffix(foundAtStr, "z")   // Theres one item with a trailing "z"
 	foundAtStr = strings.Split(foundAtStr, "/")[0]     // 27.03.2025 / 28.03.2025
