@@ -1,22 +1,19 @@
 {
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 
   outputs =
     {
       self,
-      nixpkgs,
       nixpkgs-unstable,
       flake-utils,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = import nixpkgs { inherit system; };
-        unstable = import nixpkgs-unstable { inherit system; };
+        pkgs = import nixpkgs-unstable { inherit system; };
       in
       {
         formatter = pkgs.nixfmt-tree;
@@ -26,12 +23,14 @@
             pkgs.gnumake
 
             # Backend
-            unstable.go
-            unstable.golangci-lint
+            pkgs.go
+            pkgs.gopls
+            pkgs.golangci-lint
             pkgs.air
           ];
 
           shellHook = ''
+            export CGO_ENABLED="0"
             export GOPATH="$(realpath "$PWD")/.gopath"
             export GOBIN="$GOPATH/bin"
             export GOCACHE="$GOPATH/.cache"
