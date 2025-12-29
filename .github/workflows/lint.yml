@@ -1,8 +1,8 @@
 name: lint
 
 on:
-  - push
-  - workflow_dispatch
+  push:
+  workflow_dispatch:
 
 permissions: {}
 
