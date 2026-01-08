@@ -5,7 +5,7 @@ go 1.25.5
 require (
 	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/jedib0t/go-pretty/v6 v6.7.8
-	modernc.org/sqlite v1.42.2
+	modernc.org/sqlite v1.43.0
 )
 
 require (
