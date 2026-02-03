@@ -229,7 +229,11 @@ func loadItems(
 	tbl.
 		Find(`tbody tr`).
 		EachWithBreak(func(_ int, s *goquery.Selection) bool {
-			itm, err := sel2item(s.Find(`td`))
+			e := s.Find(`td`)
+			if e.Text() == "Startseite" {
+				return true
+			}
+			itm, err := sel2item(e)
 			if err != nil {
 				details, err2 := s.Html()
 				if err2 != nil {
