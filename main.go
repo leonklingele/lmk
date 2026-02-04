@@ -77,6 +77,14 @@ func trimText(t string) string {
 	return strings.Trim(t, " \t\r\n")
 }
 
+func fixDateString(str string) string {
+	str = strings.Split(str, "/")[0]     // 27.03.2025 / 28.03.2025
+	str = strings.Split(str, " und ")[0] // 10.06.2025 und 25.06.2025
+	str = strings.Split(str, " bis ")[0] // 10.06.2025 bis 25.06.2025
+	str = strings.Split(str, ", ")[0]    // 09.12.2025, 10.12.2025, 11.12.2025, 22.12.2025
+	return str
+}
+
 type item struct {
 	Authority      string    `json:"authority"`
 	PublishedAt    time.Time `json:"published_at"`
@@ -131,10 +139,6 @@ func sel2item(s *goquery.Selection) (*item, error) {
 		ss[6],
 		ss[7]
 
-	publishedAtStr = strings.Split(publishedAtStr, "/")[0]     // 27.03.2025 / 28.03.2025
-	publishedAtStr = strings.Split(publishedAtStr, " und ")[0] // 10.06.2025 und 25.06.2025
-	publishedAtStr = strings.Split(publishedAtStr, " bis ")[0] // 10.06.2025 bis 25.06.2025
-
 	// Handle found at with multiple date strings inside
 	if n := rss[4].Find(".text p"); n != nil {
 		if t, err := n.Html(); err == nil && strings.Contains(t, ".") {
@@ -142,10 +146,8 @@ func sel2item(s *goquery.Selection) (*item, error) {
 		}
 	}
 
-	foundAtStr = strings.TrimSuffix(foundAtStr, "z")   // Theres one item with a trailing "z"
-	foundAtStr = strings.Split(foundAtStr, "/")[0]     // 27.03.2025 / 28.03.2025
-	foundAtStr = strings.Split(foundAtStr, " und ")[0] // 10.06.2025 und 25.06.2025
-	foundAtStr = strings.Split(foundAtStr, " bis ")[0] // 10.06.2025 bis 25.06.2025
+	publishedAtStr = fixDateString(publishedAtStr)
+	foundAtStr = fixDateString(foundAtStr)
 
 	itm := &item{
 		Authority:      authority,
