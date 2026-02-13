@@ -9,6 +9,7 @@ defaults:
   run:
     shell: bash
 
+# zizmor: ignore[concurrency-limits] We don't care I guess
 jobs:
   commitlint:
     name: commitlint
@@ -24,7 +25,7 @@ jobs:
           fetch-depth: 0
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: |
           [[ -f commitlint.config.ts ]] || cat > commitlint.config.ts <<EOF
           export default {

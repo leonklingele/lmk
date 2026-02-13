@@ -1,10 +1,10 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: "github-actions" # zizmor: ignore[dependabot-cooldown] We want the latest and greatest
     directory: "/"
     schedule:
       interval: "daily"
-  - package-ecosystem: "gomod"
+  - package-ecosystem: "gomod" # zizmor: ignore[dependabot-cooldown] We want the latest and greatest
     directory: "/"
     schedule:
       interval: "daily"

@@ -10,6 +10,7 @@ defaults:
   run:
     shell: bash
 
+# zizmor: ignore[concurrency-limits] We don't care I guess
 jobs:
   go-vet:
     name: go-vet
@@ -24,7 +25,7 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: nix-shell --pure --run 'go vet -v ./...'
 
   go-maprange:
@@ -40,7 +41,7 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: |
           CMD='\
             GOPATH="$PWD/.gopath" go install golang.org/x/tools/gopls/internal/analysis/maprange/cmd/maprange@latest && \
@@ -61,7 +62,7 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: |
           CMD='\
             GOPATH="$PWD/.gopath" go install golang.org/x/tools/gopls/internal/analysis/unusedparams/cmd@latest && \
@@ -83,7 +84,7 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: nix-shell --pure --run 'make lint'
 
   ls-lint:
@@ -99,7 +100,7 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: |
           cat > .ls-lint.yml <<EOF
             ls:
@@ -120,7 +121,7 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: |
           CMD='\
             GOPATH="$PWD/.gopath" go install github.com/w1ck3dg0ph3r/goptrcmp/cmd/goptrcmp@latest && \
@@ -141,7 +142,7 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: |
           CMD='\
             GOPATH="$PWD/.gopath" go install github.com/jiftechnify/untypedconst/cmd/untypedconst@latest && \
@@ -162,7 +163,7 @@ jobs:
           persist-credentials: false
       - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-unstable
       - run: |
           CMD='\
             GOPATH="$PWD/.gopath" go install github.com/sivukhin/govanish@latest && \
