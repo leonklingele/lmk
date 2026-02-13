@@ -191,7 +191,7 @@ func loadItems(
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	res, err := (&http.Client{
+	res, err := new(http.Client{
 		Timeout: requestTimeout,
 	}).Do(req)
 	if err != nil {
@@ -335,8 +335,7 @@ func run( //nolint:revive // They are bool-options
 			); err != nil {
 				// Allow "UNIQUE constraint" errors.
 				// Error code taken from https://www.sqlite.org/rescode.html#constraint_unique
-				var serr *sqlite.Error
-				if errors.As(err, &serr) && serr.Code() == 2067 {
+				if serr, ok := errors.AsType[*sqlite.Error](err); ok && serr.Code() == 2067 {
 					// This is fine
 					continue
 				}

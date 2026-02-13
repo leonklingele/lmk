@@ -23,7 +23,7 @@
             pkgs.gnumake
 
             # Backend
-            pkgs.go
+            pkgs.go_1_26
             pkgs.gopls
             pkgs.golangci-lint
             pkgs.air
