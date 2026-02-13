@@ -1,4 +1,4 @@
-# v2.6.2. Created based on golangci-lint v2.6.2
+# v2.9.0. Created based on golangci-lint v2.9.0
 version: "2"
 
 run:
@@ -45,119 +45,29 @@ formatters:
     generated: strict
 
 linters:
-  enable:
-    # - arangolint
-    - asasalint
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - canonicalheader
-    - containedctx
-    - contextcheck
-    - copyloopvar
-    # - cyclop
-    - decorder
-    - depguard
-    - dogsled
-    # - dupl
-    - dupword
-    - durationcheck
-    - embeddedstructfieldcheck
-    - err113
-    - errcheck
-    - errchkjson
-    - errname
-    - errorlint
-    - exhaustive
-    # - exhaustruct
-    - exptostd
-    - fatcontext
-    - forbidigo
-    - forcetypeassert
-    - funcorder
-    # - funlen
-    - ginkgolinter
-    - gocheckcompilerdirectives
-    - gochecknoglobals
-    - gochecknoinits
-    - gochecksumtype
-    # - gocognit
-    - goconst
-    - gocritic
-    # - gocyclo
-    # - godoclint
-    # - godot
-    - godox
-    # - goheader
-    - gomoddirectives
-    - gomodguard
-    - goprintffuncname
-    - gosec
-    - gosmopolitan
-    - govet
-    - grouper
-    - iface
-    # - importas
-    - inamedparam
-    - ineffassign
-    # - interfacebloat
-    - intrange
-    - iotamixing
-    # - ireturn
-    # - lll
-    - loggercheck
-    # - maintidx
-    - makezero
-    - mirror
-    - misspell
-    - mnd
-    - modernize
-    - musttag
-    - nakedret
-    - nestif
-    - nilerr
-    - nilnesserr
-    - nilnil
-    # - nlreturn
-    - noctx
-    # - noinlineerr
-    - nolintlint
-    - nonamedreturns
-    - nosprintfhostport
-    - paralleltest
-    - perfsprint
-    # - prealloc
-    - predeclared
-    - promlinter
-    - protogetter
-    - reassign
-    - recvcheck
-    - revive
-    - rowserrcheck
-    - sloglint
-    - spancheck
-    - sqlclosecheck
-    - staticcheck
-    - tagalign
-    - tagliatelle
-    - testableexamples
-    - testifylint
-    - testpackage
-    - thelper
-    - tparallel
-    - unconvert
-    - unparam
-    - unqueryvet
-    - unused
-    - usestdlibvars
-    - usetesting
-    # - varnamelen
-    - wastedassign
-    - whitespace
-    - wrapcheck
-    # - wsl
-    # - wsl_v5
-    - zerologlint
+  default: all
+  disable:
+    - arangolint
+    - cyclop
+    - dupl
+    - exhaustruct
+    - funlen
+    - gocognit
+    - gocyclo
+    - godoclint
+    - godot
+    - goheader
+    - importas
+    - interfacebloat
+    - ireturn
+    - lll
+    - maintidx
+    - nlreturn
+    - noinlineerr
+    - prealloc
+    - varnamelen
+    - wsl
+    - wsl_v5
   settings:
     asasalint:
       use-builtin-exclusions: false
@@ -245,6 +155,9 @@ linters:
         - FIXME
     gomoddirectives:
       go-debug-forbidden: true
+      toolchain-forbidden: true
+      tool-forbidden: true
+      check-module-path: true
     gosec:
       config:
         global:
@@ -363,6 +276,10 @@ linters:
       # TODO: Set to false once https://github.com/dominikh/go-tools/issues/1567 is fixed
       parameters-are-used: true
       local-variables-are-used: false
+    unqueryvet:
+      check-n1: true
+      check-sql-injection: true
+      check-tx-leaks: true
     usestdlibvars:
       time-date-month: true
       time-month: true
