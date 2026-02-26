@@ -193,7 +193,10 @@ func loadItems(
 
 	res, err := new(http.Client{
 		Timeout: requestTimeout,
-	}).Do(req)
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}).Do(req) //nolint:gosec // False positive
 	if err != nil {
 		return nil, fmt.Errorf("failed to get: %w", err)
 	}
