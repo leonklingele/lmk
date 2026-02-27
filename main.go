@@ -141,7 +141,8 @@ func sel2item(s *goquery.Selection) (*item, error) {
 
 	// Handle found at with multiple date strings inside
 	if n := rss[4].Find(".text p"); n != nil {
-		if t, err := n.Html(); err == nil && strings.Contains(t, ".") {
+		t, err := n.Html()
+		if err == nil && strings.Contains(t, ".") {
 			foundAtStr = strings.ReplaceAll(t, "<br/>", " / ")
 		}
 	}
@@ -198,7 +199,8 @@ func loadItems(
 		return nil, fmt.Errorf("failed to get: %w", err)
 	}
 	defer func() {
-		if err := res.Body.Close(); err != nil {
+		err := res.Body.Close()
+		if err != nil {
 			logger.WarnContext(ctx, "failed to close body", slog.Any("error", err))
 		}
 	}()
@@ -249,7 +251,8 @@ func loadItems(
 			return true
 		})
 	close(errch)
-	if err := <-errch; err != nil {
+	err = <-errch
+	if err != nil {
 		return nil, err
 	}
 
@@ -268,7 +271,7 @@ func capstring(s string, l int) string { //nolint:unparam // False positive
 	return s[:l] + "…"
 }
 
-func run( //nolint:revive // They are bool-options
+func run( //nolint:revive // flag-parameter: bool-option parameters are intentional here
 	ctx context.Context,
 	logger *slog.Logger,
 	sqliteFile string,
@@ -286,7 +289,8 @@ func run( //nolint:revive // They are bool-options
 	//nolint:nestif // Quite complex but somewhat tolerable
 	if newOnly {
 		var isFirstRun bool
-		if _, err := os.Stat(sqliteFile); errors.Is(err, fs.ErrNotExist) {
+		_, statErr := os.Stat(sqliteFile)
+		if errors.Is(statErr, fs.ErrNotExist) {
 			isFirstRun = true
 		}
 
@@ -296,8 +300,8 @@ func run( //nolint:revive // They are bool-options
 		}
 
 		if isFirstRun {
-			//nolint:unqueryvet // const query
-			if _, err := db.ExecContext(ctx, sqliteInitStmt); err != nil {
+			_, err = db.ExecContext(ctx, sqliteInitStmt) //nolint:unqueryvet // const query
+			if err != nil {
 				return fmt.Errorf("failed to init database: %w", err)
 			}
 			logger.InfoContext(ctx, "successfully initialized database")
@@ -309,7 +313,8 @@ func run( //nolint:revive // They are bool-options
 			return fmt.Errorf("failed to prepare insert statement: %w", err)
 		}
 		defer func() {
-			if err := stmt.Close(); err != nil {
+			err := stmt.Close()
+			if err != nil {
 				logger.WarnContext(ctx, "failed to close insert statement", slog.Any("error", err))
 			}
 		}()
@@ -317,13 +322,14 @@ func run( //nolint:revive // They are bool-options
 		newItems := make([]*item, 0, len(items))
 		for _, itm := range items {
 			var buf bytes.Buffer
-			if err := gob.NewEncoder(&buf).Encode(itm); err != nil {
+			err = gob.NewEncoder(&buf).Encode(itm)
+			if err != nil {
 				return fmt.Errorf("failed to gob-encode item %+v: %w", itm, err)
 			}
 
 			hash := sha256.Sum256(buf.Bytes())
 
-			if _, err := stmt.ExecContext(
+			_, err = stmt.ExecContext(
 				ctx,
 				hex.EncodeToString(hash[:]),
 				itm.Authority,
@@ -334,10 +340,12 @@ func run( //nolint:revive // They are bool-options
 				itm.Reason,
 				itm.LegalBasis,
 				itm.Info,
-			); err != nil {
+			)
+			if err != nil {
 				// Allow "UNIQUE constraint" errors.
 				// Error code taken from https://www.sqlite.org/rescode.html#constraint_unique
-				if serr, ok := errors.AsType[*sqlite.Error](err); ok && serr.Code() == 2067 {
+				serr, ok := errors.AsType[*sqlite.Error](err)
+				if ok && serr.Code() == 2067 {
 					// This is fine
 					continue
 				}
@@ -356,11 +364,13 @@ func run( //nolint:revive // They are bool-options
 		items = newItems
 	}
 
+	//nolint:nestif // Two distinct output modes with their own internal logic
 	if printAsJSON {
 		// Print as JSON
 		enc := json.NewEncoder(os.Stdout)
 		for _, itm := range items {
-			if err := enc.Encode(itm); err != nil {
+			err := enc.Encode(itm)
+			if err != nil {
 				return fmt.Errorf("failed to JSON-print to stdout: %w", err)
 			}
 		}
@@ -437,7 +447,8 @@ func main() {
 	flag.Parse()
 
 	var ll slog.LevelVar
-	if err := ll.UnmarshalText([]byte(logLevel)); err != nil {
+	err := ll.UnmarshalText([]byte(logLevel))
+	if err != nil {
 		//nolint:forbidigo // Fine to panic in main
 		panic(fmt.Errorf("unsupported log level: %s", logLevel))
 	}
@@ -450,13 +461,14 @@ func main() {
 	ctx, sstop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer sstop()
 
-	if err := run(
+	err = run(
 		ctx,
 		logger,
 		sqliteFile,
 		*newOnly,
 		*printAsJSON,
-	); err != nil {
+	)
+	if err != nil {
 		logger.ErrorContext(ctx, "failed to run", slog.Any("error", err))
 		os.Exit(1) //nolint:gocritic // Fine to not run deferred sstop
 	}

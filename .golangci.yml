@@ -59,11 +59,9 @@ linters:
     - goheader
     - importas
     - interfacebloat
-    - ireturn
     - lll
     - maintidx
     - nlreturn
-    - noinlineerr
     - prealloc
     - varnamelen
     - wsl
@@ -107,6 +105,9 @@ linters:
       check-type-assertions: true
       disable-default-exclusions: true
       verbose: true
+    errorlint:
+      check-type-assertions: true
+      errorf-multi: true
     errchkjson:
       report-no-exported: true
     exhaustive:
@@ -153,6 +154,7 @@ linters:
         - BUG
         - DEBUG
         - FIXME
+        - HACK
     gomoddirectives:
       go-debug-forbidden: true
       toolchain-forbidden: true
@@ -175,6 +177,8 @@ linters:
       const-require-grouping: true
       import-require-single-import: true
       import-require-grouping: true
+    inamedparam:
+      skip-single-param: true
     loggercheck:
       require-string-key: true
       no-printf-like: true
@@ -182,6 +186,8 @@ linters:
       locale: US
     nakedret:
       max-func-lines: 0
+    nestif:
+      min-complexity: 4
     nilnil:
       only-two: false
       detect-opposite: true
