@@ -282,8 +282,6 @@ func run(
 	sqliteFile string,
 	cfg runConfig,
 ) error {
-	newOnly := cfg.newOnly
-	printAsJSON := cfg.printAsJSON
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
 
@@ -293,7 +291,7 @@ func run(
 	}
 
 	//nolint:nestif // Quite complex but somewhat tolerable
-	if newOnly {
+	if cfg.newOnly {
 		var isFirstRun bool
 		if _, err := os.Stat(sqliteFile); errors.Is(err, fs.ErrNotExist) {
 			isFirstRun = true
@@ -365,7 +363,7 @@ func run(
 		items = newItems
 	}
 
-	if printAsJSON {
+	if cfg.printAsJSON {
 		// Print as JSON
 		enc := json.NewEncoder(os.Stdout)
 		for _, itm := range items {
