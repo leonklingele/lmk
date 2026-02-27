@@ -271,13 +271,19 @@ func capstring(s string, l int) string { //nolint:unparam // False positive
 	return s[:l] + "…"
 }
 
-func run( //nolint:revive // They are bool-options
+type runConfig struct {
+	newOnly     bool
+	printAsJSON bool
+}
+
+func run(
 	ctx context.Context,
 	logger *slog.Logger,
 	sqliteFile string,
-	newOnly,
-	printAsJSON bool,
+	cfg runConfig,
 ) error {
+	newOnly := cfg.newOnly
+	printAsJSON := cfg.printAsJSON
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
 
@@ -457,8 +463,10 @@ func main() {
 		ctx,
 		logger,
 		sqliteFile,
-		*newOnly,
-		*printAsJSON,
+		runConfig{
+			newOnly:     *newOnly,
+			printAsJSON: *printAsJSON,
+		},
 	); err != nil {
 		logger.ErrorContext(ctx, "failed to run", slog.Any("error", err))
 		os.Exit(1) //nolint:gocritic // Fine to not run deferred sstop
