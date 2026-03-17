@@ -43,7 +43,7 @@ jobs:
       - uses: cachix/install-nix-action@1ca7d21a94afc7c957383a2d217460d980de4934 # v31.10.1
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-      - run: nix-shell --pure --run 'go fix'
+      - run: nix-shell --pure --run 'go fix ./...'
       - run: git add -A && git diff --staged --exit-code
 
   verify-nixfmt-nochanges:
