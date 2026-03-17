@@ -196,7 +196,7 @@ func loadItems(
 		CheckRedirect: func(*http.Request, []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
-	}).Do(req) //nolint:gosec // False positive
+	}).Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get: %w", err)
 	}
@@ -299,14 +299,12 @@ func run( //nolint:revive // They are bool-options
 		}
 
 		if isFirstRun {
-			//nolint:unqueryvet // const query
 			if _, err := db.ExecContext(ctx, sqliteInitStmt); err != nil {
 				return fmt.Errorf("failed to init database: %w", err)
 			}
 			logger.InfoContext(ctx, "successfully initialized database")
 		}
 
-		//nolint:unqueryvet // const query
 		stmt, err := db.PrepareContext(ctx, sqliteInsertStmt)
 		if err != nil {
 			return fmt.Errorf("failed to prepare insert statement: %w", err)
