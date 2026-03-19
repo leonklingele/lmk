@@ -245,7 +245,7 @@ linters:
       context: all
       static-msg: true
       msg-style: lowercased
-      key-naming-style: snake
+      key-naming-case: snake
       args-on-sep-lines: true
     staticcheck:
       http-status-code-whitelist: []
