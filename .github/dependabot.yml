@@ -4,6 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "nix" # zizmor: ignore[dependabot-cooldown] We want the latest and greatest
+    directory: "/"
+    schedule:
+      interval: "daily"
   - package-ecosystem: "gomod" # zizmor: ignore[dependabot-cooldown] We want the latest and greatest
     directory: "/"
     schedule:
